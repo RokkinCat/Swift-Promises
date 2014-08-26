@@ -3,10 +3,15 @@
 A Swift library for implementing [Q-like](https://github.com/kriskowal/q) promises
 
 ```swift
-var json : Dictionary<String, AnyObject> = ["first_name" : "Josh", "last_name" : "Holtz"];
+let deferred = Deferred()
 
-var user = UserModel.create(json)
-println("User - \(user.firstName) \(user.lastName)");
+let promise = deferred.promise
+promise
+    .then { (object) -> () in
+        println("Then 1 - \(object)")
+    }
+
+deferred.resolve("YAY")
 ```
 
 ### Updates
@@ -16,7 +21,13 @@ Version | Changes
 **0.1.0** | Initial release
 
 ### Features
-
+- `Deferred` objects (the controller for the promise) are used change state for promise behavior which triggers callbacks
+- `Promise` objects are just read-only `Deferred` objects
+- Add then, catch, and finally blocks to a `Deferred` or `Promise` object
+- Call `When.all` to link `Promise` objects together
+    - The then block executes when all promise object states are "resolved"
+    - The catch block executes when one promise object state is "rejected"
+    - The always block executes when all promises are no longer pending
 
 ## Installation
 

@@ -19,6 +19,9 @@ class ViewController: UIViewController {
         self.rejectAfter()
         self.rejectBefore()
         
+        self.whenResolve()
+        self.whenReject()
+        
     }
     
     func resolveAfter() {
@@ -40,7 +43,7 @@ class ViewController: UIViewController {
             }
             .finally { () -> () in
                 println("Finally")
-        }
+            }
         
         deferred.resolve("YAY")
     }
@@ -65,7 +68,7 @@ class ViewController: UIViewController {
             }
             .finally { () -> () in
                 println("Finally")
-        }
+            }
 
     }
     
@@ -88,7 +91,7 @@ class ViewController: UIViewController {
             }
             .finally { () -> () in
                 println("Finally")
-        }
+            }
         
         deferred.reject("YAY")
     }
@@ -113,7 +116,65 @@ class ViewController: UIViewController {
             }
             .finally { () -> () in
                 println("Finally")
+            }
+        
+    }
+    
+    func whenResolve() {
+        
+        println("\n\nWHEN RESOLVED")
+        
+        let deferred1 = Deferred()
+        let deferred2 = Deferred()
+        let deferred3 = Deferred()
+        
+        deferred1.then { (object) -> () in println("Deferred 1 - \(object)") }
+        deferred2.then { (object) -> () in println("Deferred 2 - \(object)") }
+        deferred3.then { (object) -> () in println("Deferred 3 - \(object)") }
+        
+        When.all([deferred1, deferred2, deferred3])
+            .then { (object) -> () in
+                println("Success for all")
+            }
+            .catch { (object) -> () in
+                println("Error in one - \(object)")
+            }
+            .finally { () -> () in
+                println("Finished no matter what")
+            }
+        
+        deferred1.resolve("Woo 1")
+        deferred2.resolve("Woo 2")
+        deferred3.resolve("Woo 3")
+        
+    }
+    
+    func whenReject() {
+        
+        println("\n\nWHEN REJECT")
+        
+        let deferred1 = Deferred()
+        let deferred2 = Deferred()
+        let deferred3 = Deferred()
+        
+        deferred1.then { (object) -> () in println("Deferred 1 - \(object)") }
+        deferred2.then { (object) -> () in println("Deferred 2 - \(object)") }
+        deferred3.then { (object) -> () in println("Deferred 3 - \(object)") }
+        
+        When.all([deferred1, deferred2, deferred3])
+            .then { (object) -> () in
+                println("Success for all")
+            }
+            .catch { (object) -> () in
+                println("Error in one - \(object)")
+            }
+            .finally { () -> () in
+                println("Finished no matter what")
         }
+        
+        deferred1.resolve("Woo 1")
+        deferred2.reject("Woo 2")
+        deferred3.resolve("Woo 3")
         
     }
 

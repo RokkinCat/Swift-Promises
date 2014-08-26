@@ -136,3 +136,43 @@ class Promise {
     }
     
 }
+
+class When: Promise {
+    
+    var promiseCount: Int = 0
+    
+    private func then(object: AnyObject?) {
+        self.sync { () in
+            if (self.status != .PENDING) { return }
+            
+            self.promiseCount -= 1
+            if (self.promiseCount <= 0) {
+                self.status.resolve(self, object: nil)
+            }
+            
+        }
+    }
+    
+    private func catch(object: AnyObject?) {
+        self.sync { () in
+            if (self.status != .PENDING) { return }
+            self.status.reject(self, error: nil)
+        }
+    }
+    
+    class func all(promises: Array<Promise>) -> Promise {
+        return When().all(promises)
+    }
+    
+    func all(promises: Array<Promise>) -> Promise {
+        self.promiseCount = promises.count
+        
+        for promise in promises {
+            promise.then(then)
+            promise.catch(catch)
+        }
+        
+        return self;
+    }
+    
+}

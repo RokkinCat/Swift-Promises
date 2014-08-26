@@ -23,7 +23,7 @@ Version | Changes
 - `Deferred` objects (the controller for the promise) are used change state for promise behavior which triggers callbacks
 - `Promise` objects are just read-only `Deferred` objects
 - Add then, catch, and finally blocks to a `Deferred` or `Promise` object
-- Call `When.all` to link `Promise` objects together
+- Call `Promise.all` to link `Promise` objects together
     - The then block executes when all promise object states are "resolved"
     - The catch block executes when one promise object state is "rejected"
     - The finally block executes when all promises are no longer pending

@@ -1,4 +1,4 @@
-# Swift Promises - iOS/Swift
+# Swift Promises - iOS
 
 A Swift library for implementing [Q-like](https://github.com/kriskowal/q) promises
 

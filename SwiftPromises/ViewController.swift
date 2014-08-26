@@ -28,7 +28,9 @@ class ViewController: UIViewController {
         println("\n\nRESOLVED AFTER")
         
         let deferred = Deferred()
-        deferred
+        
+        let promise = deferred.promise
+        promise
             .then { (object) -> () in
                 println("Then 1 - \(object)")
             }

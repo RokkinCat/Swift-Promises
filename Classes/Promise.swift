@@ -17,8 +17,9 @@ public enum Status: String {
     case RESOLVED = "Resolved"
     case REJECTED = "Rejected"
     
-    private func resolve(promise: Promise, object: AnyObject?) {
+    private func resolve(promise: Promise, object: AnyObject?, shouldRunFinally: Bool = true) {
         promise.sync { () in
+            if (promise.status != .PENDING) { return }
             promise.status = .RESOLVED
             promise.object = object
             
@@ -26,18 +27,24 @@ public enum Status: String {
                 then(promise.object)
             }
             
-            promise.fin?()
+            if (shouldRunFinally) { promise.fin?() }
         }
     }
     
-    private func reject(promise: Promise, error: AnyObject?) {
+    private func reject(promise: Promise, error: AnyObject?, shouldRunFinally: Bool = true) {
         promise.sync { () in
+            if (promise.status != .PENDING) { return }
             promise.status = .REJECTED
             promise.object = error
             
             promise.cat?(promise.object)
-            promise.fin?()
+            if (shouldRunFinally) { promise.fin?() }
         }
+    }
+    
+    private func finally(promise: Promise) {
+        if (promise.status == .PENDING) { return }
+        promise.fin?()
     }
 }
 
@@ -140,23 +147,37 @@ class Promise {
 class When: Promise {
     
     var promiseCount: Int = 0
+    var numberOfThens: Int = 0
+    var numberOfCatches: Int = 0
+    var total: Int {
+        get { return numberOfThens + numberOfCatches }
+    }
     
     private func then(object: AnyObject?) {
         self.sync { () in
-            if (self.status != .PENDING) { return }
+            self.numberOfThens += 1
             
-            self.promiseCount -= 1
-            if (self.promiseCount <= 0) {
-                self.status.resolve(self, object: nil)
+            if (self.total >= self.promiseCount) {
+                if (self.status == .PENDING) {
+                    self.status.resolve(self, object: nil, shouldRunFinally: false)
+                }
+                
+                self.status.finally(self)
             }
-            
         }
     }
     
     private func catch(object: AnyObject?) {
         self.sync { () in
-            if (self.status != .PENDING) { return }
-            self.status.reject(self, error: nil)
+            self.numberOfCatches += 1
+            
+            if (self.status == .PENDING) {
+                self.status.reject(self, error: nil, shouldRunFinally: false)
+            }
+            
+            if (self.total >= self.promiseCount) {
+                self.status.finally(self)
+            }
         }
     }
     

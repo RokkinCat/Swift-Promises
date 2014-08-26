@@ -42,14 +42,52 @@ let deferred = Deferred()
         
 let promise = deferred.promise
 promise
-    .then { (object) -> () in
-        println("Then 1 - \(object)")
+    .then { (object) -> (AnyObject?) in
+        println("Will be \"Yay\" - \(object)")
+        return "Yay 1"
+    }
+    .then { (object) -> (AnyObject?) in
+        println("Will be \"Yay 1\" - \(object)")
+        return "Yay 2"
+    }
+    .then { (object) -> (AnyObject?) in
+        println("Will be \"Yay 2\" - \(object)")
+        return "Yay 3"
     }
     .then { (object) -> () in
-        println("Then 2 - \(object)")
+        println("Will be \"Yay 3\" - \(object)")
+    }
+    .catch { (object) -> () in
+        println("Catch - \(object)")
+    }
+    .finally { () -> () in
+        println("Finally")
+}
+
+deferred.resolve("Yay")
+```
+
+### Chaining
+
+```swift
+let deferred = Deferred()
+let deferredRet = Deferred()
+
+let promise = deferred.promise
+promise
+    .then { (object) -> (AnyObject?) in
+        println("Should be \"Yay\" - \(object)")
+        return "Yay 1"
     }
     .then { (object) -> () in
-        println("Then 3 - \(object)")
+        println("Should be \"Yay 1\" - \(object)")
+    }
+    .then { (object) -> (AnyObject?) in
+        println("Should be \"Yay 1\" - \(object)")
+        return deferredRet
+    }
+    .then { (object) -> () in
+        println("Should be \"YAY YAY YAY YAY\" - \(object)")
     }
     .catch { (object) -> () in
         println("Catch - \(object)")
@@ -58,10 +96,13 @@ promise
         println("Finally")
     }
 
-deferred.resolve("YAY")
+deferred.resolve("Yay")
+
+println("Go go other deferred")
+deferredRet.resolve("YAY YAY YAY YAY")
 ```
 
-### When
+### All
 
 ```swift
 let deferred1 = Deferred()
@@ -72,7 +113,7 @@ deferred1.then { (object) -> () in println("Deferred 1 - \(object)") }
 deferred2.then { (object) -> () in println("Deferred 2 - \(object)") }
 deferred3.then { (object) -> () in println("Deferred 3 - \(object)") }
 
-When.all([deferred1, deferred2, deferred3])
+Promise.all([deferred1, deferred2, deferred3])
     .then { (object) -> () in
         println("Success for all")
     }

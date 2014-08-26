@@ -92,7 +92,8 @@ deferred3.resolve("Woo 3")
 ## Author
 
 Josh Holtz, josh@rokkincat.com, [@joshdholtz](https://twitter.com/joshdholtz)
-RokkinCat - Hand-Coded in Milwaukee, WI
+
+[RokkinCat](http://www.rokkincat.com/) - Hand-Coded in Milwaukee, WI
 
 ## License
 

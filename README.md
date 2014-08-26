@@ -6,10 +6,9 @@ A Swift library for implementing [Q-like](https://github.com/kriskowal/q) promis
 let deferred = Deferred()
 
 let promise = deferred.promise
-promise
-    .then { (object) -> () in
-        println("Then 1 - \(object)")
-    }
+promise.then { (object) -> () in
+    println("Then 1 - \(object)")
+}
 
 deferred.resolve("YAY")
 ```
@@ -36,10 +35,64 @@ Clone the repository and drop in the .swift files from the "Classes" directory i
 
 ## Example Usage
 
+### Then, Catch, Finally
+
+```swift
+let deferred = Deferred()
+        
+let promise = deferred.promise
+promise
+    .then { (object) -> () in
+        println("Then 1 - \(object)")
+    }
+    .then { (object) -> () in
+        println("Then 2 - \(object)")
+    }
+    .then { (object) -> () in
+        println("Then 3 - \(object)")
+    }
+    .catch { (object) -> () in
+        println("Catch - \(object)")
+    }
+    .finally { () -> () in
+        println("Finally")
+    }
+
+deferred.resolve("YAY")
+```
+
+### When
+
+```swift
+let deferred1 = Deferred()
+let deferred2 = Deferred()
+let deferred3 = Deferred()
+
+deferred1.then { (object) -> () in println("Deferred 1 - \(object)") }
+deferred2.then { (object) -> () in println("Deferred 2 - \(object)") }
+deferred3.then { (object) -> () in println("Deferred 3 - \(object)") }
+
+When.all([deferred1, deferred2, deferred3])
+    .then { (object) -> () in
+        println("Success for all")
+    }
+    .catch { (object) -> () in
+        println("Error in one - \(object)")
+    }
+    .finally { () -> () in
+        println("Finished no matter what")
+    }
+
+deferred1.resolve("Woo 1")
+deferred2.resolve("Woo 2")
+deferred3.resolve("Woo 3")
+```
+
 
 ## Author
 
 Josh Holtz, josh@rokkincat.com, [@joshdholtz](https://twitter.com/joshdholtz)
+RokkinCat - Hand-Coded in Milwaukee, WI
 
 ## License
 

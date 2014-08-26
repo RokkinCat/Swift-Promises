@@ -26,7 +26,7 @@ Version | Changes
 - Call `When.all` to link `Promise` objects together
     - The then block executes when all promise object states are "resolved"
     - The catch block executes when one promise object state is "rejected"
-    - The always block executes when all promises are no longer pending
+    - The finally block executes when all promises are no longer pending
 
 ## Installation
 

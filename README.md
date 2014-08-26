@@ -97,4 +97,4 @@ Josh Holtz, josh@rokkincat.com, [@joshdholtz](https://twitter.com/joshdholtz)
 
 ## License
 
-Harmonic is available under the MIT license. See the LICENSE file for more info.
+Swift-Promises is available under the MIT license. See the LICENSE file for more info.

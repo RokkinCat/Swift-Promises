@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>6A0CE229-6CD7-434F-9223-19101776B62A</string>
+	<key>IDESourceControlProjectName</key>
+	<string>SwiftPromises</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>9256DF9E-30FD-4BEE-A63E-EC1CD6F9227F</key>
+		<string>ssh://github.com/RokkinCat/Swift-Promises.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>SwiftPromises.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>9256DF9E-30FD-4BEE-A63E-EC1CD6F9227F</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>ssh://github.com/RokkinCat/Swift-Promises.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>9256DF9E-30FD-4BEE-A63E-EC1CD6F9227F</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>9256DF9E-30FD-4BEE-A63E-EC1CD6F9227F</string>
+			<key>IDESourceControlWCCName</key>
+			<string>SwiftPromises</string>
+		</dict>
+	</array>
+</dict>
+</plist>

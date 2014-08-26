@@ -8,7 +8,8 @@
 
 import Foundation
 
-typealias thenClosure = (AnyObject?) -> ()
+typealias thenClosure = (AnyObject?) -> (AnyObject?)
+typealias thenClosureNoReturn = (AnyObject?) -> ()
 typealias catchClosure = (AnyObject?) -> ()
 typealias finalyClosure = () -> ()
 
@@ -23,10 +24,31 @@ public enum Status: String {
             promise.status = .RESOLVED
             promise.object = object
             
-            for then in promise.thens {
-                then(promise.object)
+            var chain: Promise?
+            
+            var paramObject: AnyObject? = promise.object
+            for (index, then) in enumerate(promise.thens) {
+                
+                // If a chain is hit, add the then
+                if (chain != nil) { chain?.then(then); return }
+                
+                var ret: AnyObject? = then(paramObject)
+                if let retPromise = ret as? Promise {
+                    
+                    // Set chained promised
+                    chain = retPromise
+                    
+                    // // Transfer catch and finally to chained promise
+                    if (promise.cat != nil) { chain?.catch(promise.cat!); promise.cat = nil }
+                    if (promise.fin != nil) { chain?.finally(promise.fin!); promise.fin = nil }
+                    
+                } else if let retAny: AnyObject = ret {
+                    paramObject = retAny
+                }
+                
             }
             
+            // Run the finally
             if (shouldRunFinally) { promise.fin?() }
         }
     }
@@ -91,6 +113,15 @@ class Promise {
         
     }
     
+    func then(then: thenClosureNoReturn) -> Promise {
+        self.then { (object) -> (AnyObject?) in
+            then(object)
+            return nil
+        }
+        
+        return self
+    }
+    
     func then(then: thenClosure) -> Promise {
         self.sync { () in
             
@@ -144,56 +175,62 @@ class Promise {
     
 }
 
-class When: Promise {
-    
-    var promiseCount: Int = 0
-    var numberOfThens: Int = 0
-    var numberOfCatches: Int = 0
-    var total: Int {
-        get { return numberOfThens + numberOfCatches }
-    }
-    
-    private func then(object: AnyObject?) {
-        self.sync { () in
-            self.numberOfThens += 1
-            
-            if (self.total >= self.promiseCount) {
-                if (self.status == .PENDING) {
-                    self.status.resolve(self, object: nil, shouldRunFinally: false)
-                }
-                
-                self.status.finally(self)
-            }
-        }
-    }
-    
-    private func catch(object: AnyObject?) {
-        self.sync { () in
-            self.numberOfCatches += 1
-            
-            if (self.status == .PENDING) {
-                self.status.reject(self, error: nil, shouldRunFinally: false)
-            }
-            
-            if (self.total >= self.promiseCount) {
-                self.status.finally(self)
-            }
-        }
-    }
-    
+extension Promise {
+
     class func all(promises: Array<Promise>) -> Promise {
         return When().all(promises)
     }
-    
-    func all(promises: Array<Promise>) -> Promise {
-        self.promiseCount = promises.count
+
+    private class When: Promise {
         
-        for promise in promises {
-            promise.then(then)
-            promise.catch(catch)
+        var promiseCount: Int = 0
+        var numberOfThens: Int = 0
+        var numberOfCatches: Int = 0
+        var total: Int {
+            get { return numberOfThens + numberOfCatches }
         }
         
-        return self;
+        private func then(object: AnyObject?) -> Promise {
+            self.sync { () in
+                self.numberOfThens += 1
+                
+                if (self.total >= self.promiseCount) {
+                    if (self.status == .PENDING) {
+                        self.status.resolve(self, object: nil, shouldRunFinally: false)
+                    }
+                    
+                    self.status.finally(self)
+                }
+            }
+            
+            return self // TODO: Should this really turn self?
+        }
+        
+        private func catch(object: AnyObject?) {
+            self.sync { () in
+                self.numberOfCatches += 1
+                
+                if (self.status == .PENDING) {
+                    self.status.reject(self, error: nil, shouldRunFinally: false)
+                }
+                
+                if (self.total >= self.promiseCount) {
+                    self.status.finally(self)
+                }
+            }
+        }
+        
+        func all(promises: Array<Promise>) -> Promise {
+            self.promiseCount = promises.count
+            
+            for promise in promises {
+                promise.then(then)
+                promise.catch(catch)
+            }
+            
+            return self;
+        }
+        
     }
-    
+
 }

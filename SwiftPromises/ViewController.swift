@@ -28,17 +28,23 @@ class ViewController: UIViewController {
         println("\n\nRESOLVED AFTER")
         
         let deferred = Deferred()
+        let deferredRet = Deferred()
         
         let promise = deferred.promise
         promise
-            .then { (object) -> () in
+            .then { (object) -> (AnyObject?) in
                 println("Then 1 - \(object)")
+                return "Yay 1"
             }
             .then { (object) -> () in
                 println("Then 2 - \(object)")
             }
-            .then { (object) -> () in
+            .then { (object) -> (AnyObject?) in
                 println("Then 3 - \(object)")
+                return deferredRet
+            }
+            .then { (object) -> () in
+                println("Then 4 - \(object)")
             }
             .catch { (object) -> () in
                 println("Catch - \(object)")
@@ -48,6 +54,10 @@ class ViewController: UIViewController {
             }
         
         deferred.resolve("YAY")
+        
+        println("gogogo")
+        deferredRet.resolve("YAY YAY YAY YAY")
+
     }
     
     func resolveBefore() {
@@ -134,7 +144,7 @@ class ViewController: UIViewController {
         deferred2.then { (object) -> () in println("Deferred 2 - \(object)") }
         deferred3.then { (object) -> () in println("Deferred 3 - \(object)") }
         
-        When.all([deferred1, deferred2, deferred3])
+        Promise.all([deferred1, deferred2, deferred3])
             .then { (object) -> () in
                 println("Success for all")
             }
@@ -163,7 +173,7 @@ class ViewController: UIViewController {
         deferred2.then { (object) -> () in println("Deferred 2 - \(object)") }
         deferred3.then { (object) -> () in println("Deferred 3 - \(object)") }
         
-        When.all([deferred1, deferred2, deferred3])
+        Promise.all([deferred1, deferred2, deferred3])
             .then { (object) -> () in
                 println("Success for all")
             }

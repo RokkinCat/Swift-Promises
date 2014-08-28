@@ -108,7 +108,7 @@ Promise.all( [ getSomething1(), getSomething2()  ] )
 ```swift
 let deferred = Deferred()
 
-dispatch_after(1, dispatch_get_main_queue()) { 
+dispatch_after( dispatch_time(5.0, Int64(delay * Double(NSEC_PER_SEC)) ), dispatch_get_main_queue()) { 
     deferred.resolve("Yay stuff")
     
     // or if error
@@ -116,6 +116,15 @@ dispatch_after(1, dispatch_get_main_queue()) {
 }
 
 return deferred.promise
+```
+
+### Alternative Promise Creation
+
+```swift
+var promise = Promise { (resolve: (AnyObject?) -> (), reject: (AnyObject?) -> ()) -> () in
+    // Probably do some logic like an API call or something
+    resolve("We got something back from API?")
+}
 ```
 
 ## Author

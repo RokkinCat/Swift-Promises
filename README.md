@@ -33,102 +33,90 @@ Version | Changes
 ### Drop-in Classes
 Clone the repository and drop in the .swift files from the "Classes" directory into your project.
 
-## Example Usage
-
-### Then, Catch, Finally
+## Tutorial
 
 ```swift
-let deferred = Deferred()
+promiseMeSomething()
+    .then { (value) -> () in
         
-let promise = deferred.promise
-promise
-    .then { (object) -> (AnyObject?) in
-        println("Will be \"Yay\" - \(object)")
-        return "Yay 1"
     }
-    .then { (object) -> (AnyObject?) in
-        println("Will be \"Yay 1\" - \(object)")
-        return "Yay 2"
+    .catch { (error) -> () in
+        println("Catch - \(error)")
     }
-    .then { (object) -> (AnyObject?) in
-        println("Will be \"Yay 2\" - \(object)")
-        return "Yay 3"
-    }
-    .then { (object) -> () in
-        println("Will be \"Yay 3\" - \(object)")
-    }
-    .catch { (object) -> () in
-        println("Catch - \(object)")
-    }
-    .finally { () -> () in
-        println("Finally")
-}
+```
 
-deferred.resolve("Yay")
+### Propagation
+
+```swift
+let promise: Promise = getInputPromise()
+    .then { (value) -> () in
+
+    }
+```
+
+```swift
+let promise: Promise = getInputPromise()
+    .catch { (value) -> () in
+
+    }
+```
+
+```swift
+let promise: Promise = getInputPromise()
+    .finally { (value) -> () in
+
+    }
 ```
 
 ### Chaining
 
 ```swift
-let deferred = Deferred()
-let deferredRet = Deferred()
+return getUsername()
+    .then { (username) -> (AnyObject?) in
+        getUser(username)
+            .then { (user) -> () in
+        
+            }
+    }
+```
 
-let promise = deferred.promise
-promise
-    .then { (object) -> (AnyObject?) in
-        println("Should be \"Yay\" - \(object)")
-        return "Yay 1"
+```swift
+return getUsername()
+    .then { (username) -> (AnyObject?) in
+        return getUser(username)
     }
-    .then { (object) -> () in
-        println("Should be \"Yay 1\" - \(object)")
+    .then { (user) -> () in
+    
     }
-    .then { (object) -> (AnyObject?) in
-        println("Should be \"Yay 1\" - \(object)")
-        return deferredRet
-    }
-    .then { (object) -> () in
-        println("Should be \"YAY YAY YAY YAY\" - \(object)")
-    }
-    .catch { (object) -> () in
-        println("Catch - \(object)")
-    }
-    .finally { () -> () in
-        println("Finally")
-    }
-
-deferred.resolve("Yay")
-
-println("Go go other deferred")
-deferredRet.resolve("YAY YAY YAY YAY")
 ```
 
 ### All
 
 ```swift
-let deferred1 = Deferred()
-let deferred2 = Deferred()
-let deferred3 = Deferred()
-
-deferred1.then { (object) -> () in println("Deferred 1 - \(object)") }
-deferred2.then { (object) -> () in println("Deferred 2 - \(object)") }
-deferred3.then { (object) -> () in println("Deferred 3 - \(object)") }
-
-Promise.all([deferred1, deferred2, deferred3])
-    .then { (object) -> () in
-        println("Success for all")
+Promise.all( [ getSomething1(), getSomething2()  ] )
+    .then { (values) -> () in
+    
     }
-    .catch { (object) -> () in
-        println("Error in one - \(object)")
-    }
-    .finally { () -> () in
-        println("Finished no matter what")
+    .catch { (values) -> () in
+    
     }
 
-deferred1.resolve("Woo 1")
-deferred2.resolve("Woo 2")
-deferred3.resolve("Woo 3")
 ```
 
+### Using Deferreds
+
+```swift
+let deferred = Deferred()
+
+dispatch_after(1, dispatch_get_main_queue()) { 
+    deferred.resolve("Yay stuff")
+    
+    // or if error
+    // deferred.reject("Boo stuff")
+}
+
+return deferred.promise
+```
 
 ## Author
 

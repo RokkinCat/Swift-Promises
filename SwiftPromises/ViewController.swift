@@ -33,23 +33,23 @@ class ViewController: UIViewController {
         
         let promise = deferred.promise
         promise
-            .then { (object) -> (AnyObject?) in
-                println("Will be \"Yay\" - \(object)")
+            .then { (value) -> (AnyObject?) in
+                println("Will be \"Yay\" - \(value)")
                 return "Yay 1"
             }
-            .then { (object) -> (AnyObject?) in
-                println("Will be \"Yay 1\" - \(object)")
+            .then { (value) -> (AnyObject?) in
+                println("Will be \"Yay 1\" - \(value)")
                 return "Yay 2"
             }
-            .then { (object) -> (AnyObject?) in
-                println("Will be \"Yay 2\" - \(object)")
+            .then { (value) -> (AnyObject?) in
+                println("Will be \"Yay 2\" - \(value)")
                 return "Yay 3"
             }
-            .then { (object) -> () in
-                println("Will be \"Yay 3\" - \(object)")
+            .then { (value) -> () in
+                println("Will be \"Yay 3\" - \(value)")
             }
-            .catch { (object) -> () in
-                println("Catch - \(object)")
+            .catch { (error) -> () in
+                println("Catch - \(error)")
             }
             .finally { () -> () in
                 println("Finally")
@@ -67,22 +67,22 @@ class ViewController: UIViewController {
         
         let promise = deferred.promise
         promise
-            .then { (object) -> (AnyObject?) in
-                println("Should be \"Yay\" - \(object)")
+            .then { (value) -> (AnyObject?) in
+                println("Should be \"Yay\" - \(value)")
                 return "Yay 1"
             }
-            .then { (object) -> () in
-                println("Should be \"Yay 1\" - \(object)")
+            .then { (value) -> () in
+                println("Should be \"Yay 1\" - \(value)")
             }
-            .then { (object) -> (AnyObject?) in
-                println("Should be \"Yay 1\" - \(object)")
+            .then { (value) -> (AnyObject?) in
+                println("Should be \"Yay 1\" - \(value)")
                 return deferredRet
             }
-            .then { (object) -> () in
-                println("Should be \"YAY YAY YAY YAY\" - \(object)")
+            .then { (value) -> () in
+                println("Should be \"YAY YAY YAY YAY\" - \(value)")
             }
-            .catch { (object) -> () in
-                println("Catch - \(object)")
+            .catch { (error) -> () in
+                println("Catch - \(error)")
             }
             .finally { () -> () in
                 println("Finally")
@@ -101,17 +101,17 @@ class ViewController: UIViewController {
         let deferred = Deferred()
         deferred.resolve("YAY")
         deferred
-            .then { (object) -> () in
-                println("Then 1 - \(object)")
+            .then { (value) -> () in
+                println("Then 1 - \(value)")
             }
-            .then { (object) -> () in
-                println("Then 2 - \(object)")
+            .then { (value) -> () in
+                println("Then 2 - \(value)")
             }
-            .then { (object) -> () in
-                println("Then 3 - \(object)")
+            .then { (value) -> () in
+                println("Then 3 - \(value)")
             }
-            .catch { (object) -> () in
-                println("Catch - \(object)")
+            .catch { (error) -> () in
+                println("Catch - \(error)")
             }
             .finally { () -> () in
                 println("Finally")
@@ -124,17 +124,17 @@ class ViewController: UIViewController {
         
         let deferred = Deferred()
         deferred
-            .then { (object) -> () in
-                println("Then 1 - \(object)")
+            .then { (value) -> () in
+                println("Then 1 - \(value)")
             }
-            .then { (object) -> () in
-                println("Then 2 - \(object)")
+            .then { (value) -> () in
+                println("Then 2 - \(value)")
             }
-            .then { (object) -> () in
-                println("Then 3 - \(object)")
+            .then { (value) -> () in
+                println("Then 3 - \(value)")
             }
-            .catch { (object) -> () in
-                println("Catch - \(object)")
+            .catch { (error) -> () in
+                println("Catch - \(error)")
             }
             .finally { () -> () in
                 println("Finally")
@@ -149,17 +149,17 @@ class ViewController: UIViewController {
         let deferred = Deferred()
         deferred.reject("YAY")
         deferred
-            .then { (object) -> () in
-                println("Then 1 - \(object)")
+            .then { (value) -> () in
+                println("Then 1 - \(value)")
             }
-            .then { (object) -> () in
-                println("Then 2 - \(object)")
+            .then { (value) -> () in
+                println("Then 2 - \(value)")
             }
-            .then { (object) -> () in
-                println("Then 3 - \(object)")
+            .then { (value) -> () in
+                println("Then 3 - \(value)")
             }
-            .catch { (object) -> () in
-                println("Catch - \(object)")
+            .catch { (error) -> () in
+                println("Catch - \(error)")
             }
             .finally { () -> () in
                 println("Finally")
@@ -175,16 +175,16 @@ class ViewController: UIViewController {
         let deferred2 = Deferred()
         let deferred3 = Deferred()
         
-        deferred1.then { (object) -> () in println("Deferred 1 - \(object)") }
-        deferred2.then { (object) -> () in println("Deferred 2 - \(object)") }
-        deferred3.then { (object) -> () in println("Deferred 3 - \(object)") }
+        deferred1.then { (value) -> () in println("Deferred 1 - \(value)") }
+        deferred2.then { (value) -> () in println("Deferred 2 - \(value)") }
+        deferred3.then { (value) -> () in println("Deferred 3 - \(value)") }
         
         Promise.all([deferred1, deferred2, deferred3])
-            .then { (object) -> () in
+            .then { (value) -> () in
                 println("Success for all")
             }
-            .catch { (object) -> () in
-                println("Error in one - \(object)")
+            .catch { (error) -> () in
+                println("Error in one - \(error)")
             }
             .finally { () -> () in
                 println("Finished no matter what")
@@ -204,16 +204,16 @@ class ViewController: UIViewController {
         let deferred2 = Deferred()
         let deferred3 = Deferred()
         
-        deferred1.then { (object) -> () in println("Deferred 1 - \(object)") }
-        deferred2.then { (object) -> () in println("Deferred 2 - \(object)") }
-        deferred3.then { (object) -> () in println("Deferred 3 - \(object)") }
+        deferred1.then { (value) -> () in println("Deferred 1 - \(value)") }
+        deferred2.then { (value) -> () in println("Deferred 2 - \(value)") }
+        deferred3.then { (value) -> () in println("Deferred 3 - \(value)") }
         
         Promise.all([deferred1, deferred2, deferred3])
-            .then { (object) -> () in
+            .then { (value) -> () in
                 println("Success for all")
             }
-            .catch { (object) -> () in
-                println("Error in one - \(object)")
+            .catch { (error) -> () in
+                println("Error in one - \(error)")
             }
             .finally { () -> () in
                 println("Finished no matter what")
@@ -234,8 +234,8 @@ class ViewController: UIViewController {
             resolve("We got something back from API?")
         }
         
-        promise.then { (object) -> () in
-            println("Yay, then was called without a deferred - \(object)")
+        promise.then { (value) -> () in
+            println("Yay, then was called without a deferred - \(value)")
         }
         
     }
@@ -249,11 +249,11 @@ class ViewController: UIViewController {
             reject("We got something back from API?")
         }
         
-        promise.then { (object) -> () in
-            println("Yay, then was called without a deferred - \(object)")
+        promise.then { (value) -> () in
+            println("Yay, then was called without a deferred - \(value)")
         }
-        promise.catch { (object) -> () in
-            println("Yay, catch was called without a deferred")
+        promise.catch { (error) -> () in
+            println("Yay, catch was called without a deferred - \(error)")
         }
         
     }

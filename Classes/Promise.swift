@@ -34,8 +34,8 @@ class Deferred: Promise {
         self.promise = promise
     }
     
-    func resolve(object: AnyObject?) {
-        promise.doResolve(object)
+    func resolve(value: AnyObject?) {
+        promise.doResolve(value)
     }
     
     func reject(error: AnyObject?) {
@@ -63,15 +63,15 @@ class Promise {
     var fin: finalyClosure?
  
     var status: Status = .PENDING
-    var object: AnyObject?
+    var value: AnyObject?
     
     private init() {
         
     }
     
     func then(then: thenClosureNoReturn) -> Promise {
-        self.then { (object) -> (AnyObject?) in
-            then(object)
+        self.then { (value) -> (AnyObject?) in
+            then(value)
             return nil
         }
         
@@ -84,7 +84,7 @@ class Promise {
             if (self.status == .PENDING) {
                 self.thens.append(then)
             } else if (self.status == .RESOLVED) {
-                then(self.object)
+                then(self.value)
             }
             
         }
@@ -100,7 +100,7 @@ class Promise {
             if (self.status == .PENDING) {
                 self.cat = catch
             } else if (self.status == .REJECTED) {
-                catch(self.object)
+                catch(self.value)
             }
             
         }
@@ -129,21 +129,21 @@ class Promise {
         dispatch_sync(lockQueue, closure)
     }
     
-    private func doResolve(object: AnyObject?, shouldRunFinally: Bool = true) {
+    private func doResolve(value: AnyObject?, shouldRunFinally: Bool = true) {
         self.sync { () in
             if (self.status != .PENDING) { return }
             self.status = .RESOLVED
-            self.object = object
+            self.value = value
             
             var chain: Promise?
             
-            var paramObject: AnyObject? = self.object
+            var paramValue: AnyObject? = self.value
             for (index, then) in enumerate(self.thens) {
                 
                 // If a chain is hit, add the then
                 if (chain != nil) { chain?.then(then); return }
                 
-                var ret: AnyObject? = then(paramObject)
+                var ret: AnyObject? = then(paramValue)
                 if let retPromise = ret as? Promise {
                     
                     // Set chained promised
@@ -154,7 +154,7 @@ class Promise {
                     if (self.fin != nil) { chain?.finally(self.fin!); self.fin = nil }
                     
                 } else if let retAny: AnyObject = ret {
-                    paramObject = retAny
+                    paramValue = retAny
                 }
                 
             }
@@ -168,9 +168,9 @@ class Promise {
         self.sync { () in
             if (self.status != .PENDING) { return }
             self.status = .REJECTED
-            self.object = error
+            self.value = error
             
-            self.cat?(self.object)
+            self.cat?(self.value)
             if (shouldRunFinally) { self.fin?() }
         }
     }
@@ -208,7 +208,7 @@ extension Promise {
             get { return numberOfThens + numberOfCatches }
         }
         
-        private func then(object: AnyObject?) -> Promise {
+        private func then(value: AnyObject?) -> Promise {
             self.sync { () in
                 self.numberOfThens += 1
                 
@@ -224,7 +224,7 @@ extension Promise {
             return self // TODO: Should this really turn self?
         }
         
-        private func catch(object: AnyObject?) {
+        private func catch(value: AnyObject?) {
             self.sync { () in
                 self.numberOfCatches += 1
                 

@@ -13,6 +13,8 @@ typealias thenClosureNoReturn = (AnyObject?) -> ()
 typealias catchClosure = (AnyObject?) -> ()
 typealias finalyClosure = () -> ()
 
+typealias promiseClosure = ( (AnyObject?) -> (), (AnyObject?) -> () ) -> ()
+
 public enum Status: String {
     case PENDING = "Pending"
     case RESOLVED = "Resolved"
@@ -22,10 +24,14 @@ public enum Status: String {
 
 class Deferred: Promise {
     
-    let promise = Promise()
+    var promise:Promise
     
-    override init() {
-        
+    override convenience init() {
+        self.init(promise: Promise())
+    }
+
+    private init(promise: Promise) {
+        self.promise = promise
     }
     
     func resolve(object: AnyObject?) {
@@ -172,6 +178,17 @@ class Promise {
     private func doFinally(promise: Promise) {
         if (self.status == .PENDING) { return }
         self.fin?()
+    }
+
+}
+
+extension Promise  {
+
+    convenience init(promiseClosure: ( resolve: (AnyObject?) -> (), reject: (AnyObject?) -> () ) -> ()) {
+        self.init()
+
+        var deferred = Deferred(promise: self)
+        promiseClosure( deferred.resolve, deferred.reject )
     }
 
 }

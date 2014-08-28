@@ -23,6 +23,7 @@ class ViewController: UIViewController {
         self.allResolve()
         self.allReject()
         
+        self.alternativePromise();
     }
     
     func resolveAfter() {
@@ -221,6 +222,39 @@ class ViewController: UIViewController {
         deferred1.resolve("Woo 1")
         deferred2.reject("Woo 2")
         deferred3.resolve("Woo 3")
+        
+    }
+    
+    func alternativePromise() {
+        
+        println("\n\nALTERNATIVE PROMISE (WITHOUT DEFERRED)")
+        
+        var promise = Promise { (resolve: (AnyObject?) -> (), reject: (AnyObject?) -> ()) -> () in
+            // Probably do some logic like an API call or something
+            resolve("We got something back from API?")
+        }
+        
+        promise.then { (object) -> () in
+            println("Yay, then was called without a deferred - \(object)")
+        }
+        
+    }
+    
+    func alternativePromiseFail() {
+        
+        println("\n\nALTERNATIVE PROMISE FAIL (WITHOUT DEFERRED)")
+        
+        var promise = Promise { (resolve: (AnyObject?) -> (), reject: (AnyObject?) -> ()) -> () in
+            // Probably do some logic like an API call or something
+            reject("We got something back from API?")
+        }
+        
+        promise.then { (object) -> () in
+            println("Yay, then was called without a deferred - \(object)")
+        }
+        promise.catch { (object) -> () in
+            println("Yay, catch was called without a deferred")
+        }
         
     }
 

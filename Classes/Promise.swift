@@ -17,57 +17,7 @@ public enum Status: String {
     case PENDING = "Pending"
     case RESOLVED = "Resolved"
     case REJECTED = "Rejected"
-    
-    private func resolve(promise: Promise, object: AnyObject?, shouldRunFinally: Bool = true) {
-        promise.sync { () in
-            if (promise.status != .PENDING) { return }
-            promise.status = .RESOLVED
-            promise.object = object
-            
-            var chain: Promise?
-            
-            var paramObject: AnyObject? = promise.object
-            for (index, then) in enumerate(promise.thens) {
-                
-                // If a chain is hit, add the then
-                if (chain != nil) { chain?.then(then); return }
-                
-                var ret: AnyObject? = then(paramObject)
-                if let retPromise = ret as? Promise {
-                    
-                    // Set chained promised
-                    chain = retPromise
-                    
-                    // // Transfer catch and finally to chained promise
-                    if (promise.cat != nil) { chain?.catch(promise.cat!); promise.cat = nil }
-                    if (promise.fin != nil) { chain?.finally(promise.fin!); promise.fin = nil }
-                    
-                } else if let retAny: AnyObject = ret {
-                    paramObject = retAny
-                }
-                
-            }
-            
-            // Run the finally
-            if (shouldRunFinally) { promise.fin?() }
-        }
-    }
-    
-    private func reject(promise: Promise, error: AnyObject?, shouldRunFinally: Bool = true) {
-        promise.sync { () in
-            if (promise.status != .PENDING) { return }
-            promise.status = .REJECTED
-            promise.object = error
-            
-            promise.cat?(promise.object)
-            if (shouldRunFinally) { promise.fin?() }
-        }
-    }
-    
-    private func finally(promise: Promise) {
-        if (promise.status == .PENDING) { return }
-        promise.fin?()
-    }
+
 }
 
 class Deferred: Promise {
@@ -79,11 +29,11 @@ class Deferred: Promise {
     }
     
     func resolve(object: AnyObject?) {
-        promise.status.resolve(promise, object: object)
+        promise.doResolve(object)
     }
     
     func reject(error: AnyObject?) {
-        promise.status.reject(promise, error: error)
+        promise.doReject(error)
     }
     
     override func then(then: thenClosure) -> Promise {
@@ -173,15 +123,66 @@ class Promise {
         dispatch_sync(lockQueue, closure)
     }
     
+    private func doResolve(object: AnyObject?, shouldRunFinally: Bool = true) {
+        self.sync { () in
+            if (self.status != .PENDING) { return }
+            self.status = .RESOLVED
+            self.object = object
+            
+            var chain: Promise?
+            
+            var paramObject: AnyObject? = self.object
+            for (index, then) in enumerate(self.thens) {
+                
+                // If a chain is hit, add the then
+                if (chain != nil) { chain?.then(then); return }
+                
+                var ret: AnyObject? = then(paramObject)
+                if let retPromise = ret as? Promise {
+                    
+                    // Set chained promised
+                    chain = retPromise
+                    
+                    // // Transfer catch and finally to chained promise
+                    if (self.cat != nil) { chain?.catch(self.cat!); self.cat = nil }
+                    if (self.fin != nil) { chain?.finally(self.fin!); self.fin = nil }
+                    
+                } else if let retAny: AnyObject = ret {
+                    paramObject = retAny
+                }
+                
+            }
+            
+            // Run the finally
+            if (shouldRunFinally) { self.fin?() }
+        }
+    }
+    
+    private func doReject(error: AnyObject?, shouldRunFinally: Bool = true) {
+        self.sync { () in
+            if (self.status != .PENDING) { return }
+            self.status = .REJECTED
+            self.object = error
+            
+            self.cat?(self.object)
+            if (shouldRunFinally) { self.fin?() }
+        }
+    }
+    
+    private func doFinally(promise: Promise) {
+        if (self.status == .PENDING) { return }
+        self.fin?()
+    }
+
 }
 
 extension Promise {
 
     class func all(promises: Array<Promise>) -> Promise {
-        return When().all(promises)
+        return All(promises: promises)
     }
 
-    private class When: Promise {
+    private class All: Promise {
         
         var promiseCount: Int = 0
         var numberOfThens: Int = 0
@@ -196,10 +197,10 @@ extension Promise {
                 
                 if (self.total >= self.promiseCount) {
                     if (self.status == .PENDING) {
-                        self.status.resolve(self, object: nil, shouldRunFinally: false)
+                        self.doResolve(nil, shouldRunFinally: false)
                     }
                     
-                    self.status.finally(self)
+                    self.doFinally(self)
                 }
             }
             
@@ -211,16 +212,17 @@ extension Promise {
                 self.numberOfCatches += 1
                 
                 if (self.status == .PENDING) {
-                    self.status.reject(self, error: nil, shouldRunFinally: false)
+                    self.doReject(nil, shouldRunFinally: false)
                 }
                 
                 if (self.total >= self.promiseCount) {
-                    self.status.finally(self)
+                    self.doFinally(self)
                 }
             }
         }
         
-        func all(promises: Array<Promise>) -> Promise {
+        init(promises: Array<Promise>) {
+            super.init()
             self.promiseCount = promises.count
             
             for promise in promises {
@@ -228,7 +230,6 @@ extension Promise {
                 promise.catch(catch)
             }
             
-            return self;
         }
         
     }

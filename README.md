@@ -164,38 +164,90 @@ return getUsername()
 
 ### All
 
+Chaining `thens` together works great when you have a promise that dpends on another promise. But sometimes you would like to perform multiple asynchronous tasks and get notified when all are complete. To do that, we make use `all`.
+
+To use `all`, pass in an array of promises. When al the promises get "resolved", the `then` closure will get called. If one of the promises gets "rejected", the `catch` closure will get called.
+
+The `values` that gets passed into the `then` closure will be an array of values in order that the promises were passed in.
+
 ```swift
 Promise.all( [ getSomething1(), getSomething2()  ] )
     .then { (values) -> () in
-    
+        // Returns array of value in same order promises passed in
     }
-    .catch { (values) -> () in
+    .catch { (error) -> () in
     
     }
 
 ```
 
-### Using Deferreds
+### Getting individual progress
+
+If you need to get the invidual progress of any of the promises passed in to the all, you can simply add a then onto the individual promises themselves
 
 ```swift
-let deferred = Deferred()
+let promise1 = getSomething1().then { (values) -> () in println("Do something 1")  }
+let promise2 = getSomething2().then { (values) -> () in println("Do something 2")  }
 
-dispatch_after( dispatch_time(5.0, Int64(delay * Double(NSEC_PER_SEC)) ), dispatch_get_main_queue()) { 
-    deferred.resolve("Yay stuff")
+Promise.all( [ promise1, promise2  ] )
+    .then { (values) -> () in
     
-    // or if error
-    // deferred.reject("Boo stuff")
-}
+    }
+    .catch { (error) -> () in
+    
+    }
+```
 
-return deferred.promise
+
+### Using Deferreds
+
+Up to this point you have seen function examples that have been `getUsername()` or `getPromseNumber4()`. These methods have returned promises for you to use but we have not seen anything yet on to make a promise as "resolved" or "rejected". That is exactly what a `Deferred` object is used for. A `Deferred` is a `Promise` but allows "write" ability to it to make it has "resolved" or "rejected".  A `Deferred` object would usually be encapsulated in a function.
+
+### Resolved
+
+```swift
+func getPromseNumber4() -> Promise {
+    let deferred = Deferred()
+    
+    // This dispatch_after does not need to be here but we all like dramatic effect
+    dispatch_after( dispatch_time(5.0, Int64(delay * Double(NSEC_PER_SEC)) ), dispatch_get_main_queue()) { 
+        // This runs any closures defined by the "then" function described above
+        deferred.resolve(4)
+    }
+    
+    return deferred.promise
+}
+```
+
+### Rejected
+
+```swift
+func getTheLimit() -> Promise {
+    let deferred = Deferred()
+    
+    // This dispatch_after does not need to be here but we all like dramatic effect
+    dispatch_after( dispatch_time(5.0, Int64(delay * Double(NSEC_PER_SEC)) ), dispatch_get_main_queue()) { 
+        // This runs the clsured defined by the "catch" function described above
+        deferred.reject("The limit does not exist")
+    }
+    
+    return deferred.promise
+}
 ```
 
 ### Alternative Promise Creation
 
+Sometimes using a `Deferred` can be too much overhead. What you can do instead is create a promise takes a closure in as a parametere which contains its own paremeters for the "resolve" and "reject" functions"
+
 ```swift
 var promise = Promise { (resolve: (AnyObject?) -> (), reject: (AnyObject?) -> ()) -> () in
     // Probably do some logic like an API call or something
-    resolve("We got something back from API?")
+    response = API.login()
+    if (response.success) {
+        resolve(response.user)
+    } else {
+        reject(response.error)
+    }
 }
 ```
 

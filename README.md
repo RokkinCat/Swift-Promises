@@ -83,7 +83,7 @@ let promise: Promise = getPromiseNumber4()
 
 The above example does not do much of anything. In order to make use of the return we would need to add another call 'then' onto this example. The value that gets passed into each of the `then` closures is what was return from the previous `then` closure. If a closure with no return value is used, then the same value passed into that closure will get passed into the following. 
 
-### Example 1 - Add 2
+#### Example 1 - Add 2
 
 This following example will add 2 onto the number `4` that is getting resolved from that promise. You will see the value getting returned a `then` is then passed into the next `then` as a parametere
 
@@ -106,7 +106,7 @@ let promise: Promise = getPromiseNumber4()
     }
 ```
 
-### Example 2 - Do nothing
+#### Example 2 - Do nothing
 
 This following example will not do anything with the number `4` that is getting resolved from that promise. You will see the value getting passed to all the `thens` will be 4.
 
@@ -144,6 +144,9 @@ return getUsername()
                 // to do something this
             }
     }
+    .catch { (error) -> () in
+        // Catches a "reject" by either of the promises
+    }
 ```
 
 The above works great but is a bit ugly and kind of hard to read. What we can do instead is chain two `thens` together
@@ -159,6 +162,9 @@ return getUsername()
     .then { (user) -> () in
         // when resolved, we know have a user object
         // to do something this
+    }
+    .catch { (error) -> () in
+        // Catches a "reject" by either of the promises
     }
 ```
 

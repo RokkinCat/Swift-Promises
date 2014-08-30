@@ -19,7 +19,6 @@ public enum Status: String {
     case PENDING = "Pending"
     case RESOLVED = "Resolved"
     case REJECTED = "Rejected"
-
 }
 
 class Deferred: Promise {
@@ -41,7 +40,7 @@ class Deferred: Promise {
     func reject(error: AnyObject?) {
         promise.doReject(error)
     }
-    
+
     override func then(then: thenClosure) -> Promise {
         return promise.then(then)
     }
@@ -62,8 +61,19 @@ class Promise {
     var cat: catchClosure?
     var fin: finalyClosure?
  
-    var status: Status = .PENDING
     var value: AnyObject?
+
+    var _status: Status = .PENDING
+    private var statusObserver: ( (Promise) -> () )?
+    var status: Status {
+        get {
+            return _status
+        }
+        set(status) {
+            _status = status
+            statusObserver?(self)
+        }
+    }
     
     private init() {
         
@@ -132,7 +142,6 @@ class Promise {
     private func doResolve(value: AnyObject?, shouldRunFinally: Bool = true) {
         self.sync { () in
             if (self.status != .PENDING) { return }
-            self.status = .RESOLVED
             self.value = value
             
             var chain: Promise?
@@ -160,23 +169,27 @@ class Promise {
             }
             
             // Run the finally
-            if (shouldRunFinally) { self.fin?() }
+            if (shouldRunFinally) {
+                if (chain == nil) {
+                    self.doFinally(.RESOLVED)
+                }
+            }
         }
     }
     
     private func doReject(error: AnyObject?, shouldRunFinally: Bool = true) {
         self.sync { () in
             if (self.status != .PENDING) { return }
-            self.status = .REJECTED
             self.value = error
             
             self.cat?(self.value)
-            if (shouldRunFinally) { self.fin?() }
+            if (shouldRunFinally) { self.doFinally(.REJECTED) }
         }
     }
     
-    private func doFinally(promise: Promise) {
-        if (self.status == .PENDING) { return }
+    private func doFinally(status: Status) {
+        if (self.status != .PENDING) { return }
+        self.status = status
         self.fin?()
     }
 
@@ -202,49 +215,77 @@ extension Promise {
     private class All: Promise {
         
         var promiseCount: Int = 0
-        var numberOfThens: Int = 0
-        var numberOfCatches: Int = 0
+        var numberOfResolveds: Int = 0
+        var numberOfRejecteds: Int = 0
         var total: Int {
-            get { return numberOfThens + numberOfCatches }
+            get { return numberOfResolveds + numberOfRejecteds }
         }
+        private var statusToChangeTo: Status = .PENDING
         
-        private func then(value: AnyObject?) -> Promise {
+        private func observe(promise: Promise) {
             self.sync { () in
-                self.numberOfThens += 1
-                
+                switch promise.status {
+                    case .RESOLVED:
+                        self.numberOfResolveds++
+                    case .REJECTED:
+                        self.numberOfRejecteds++
+                        if (self.statusToChangeTo == .PENDING) {
+                            self.statusToChangeTo = .REJECTED
+                            self.doReject(promise.value, shouldRunFinally: false)
+                        }
+                    default:
+                        0 // noop
+                }
+
                 if (self.total >= self.promiseCount) {
-                    if (self.status == .PENDING) {
+                    if (self.statusToChangeTo == .PENDING) {
+                        self.statusToChangeTo = .RESOLVED
                         self.doResolve(nil, shouldRunFinally: false)
                     }
-                    
-                    self.doFinally(self)
+
+                    self.doFinally(self.statusToChangeTo)
                 }
+
             }
-            
-            return self // TODO: Should this really turn self?
         }
+
+//        private func then(value: AnyObject?) -> Promise {
+//            self.sync { () in
+//                self.numberOfThens += 1
+//                
+//                if (self.total >= self.promiseCount) {
+//                    if (self.status == .PENDING) {
+//                        self.doResolve(nil, shouldRunFinally: false)
+//                    }
+//                    
+//                    self.doFinally(self)
+//                }
+//            }
+//            
+//            return self // TODO: Should this really turn self?
+//        }
         
-        private func catch(value: AnyObject?) {
-            self.sync { () in
-                self.numberOfCatches += 1
-                
-                if (self.status == .PENDING) {
-                    self.doReject(nil, shouldRunFinally: false)
-                }
-                
-                if (self.total >= self.promiseCount) {
-                    self.doFinally(self)
-                }
-            }
-        }
+//        private func catch(value: AnyObject?) {
+//            self.sync { () in
+//                self.numberOfCatches += 1
+//                
+//                if (self.status == .PENDING) {
+//                    self.doReject(nil, shouldRunFinally: false)
+//                }
+//                
+//                if (self.total >= self.promiseCount) {
+//                    self.doFinally(self)
+//                }
+//            }
+//        }
         
         init(promises: Array<Promise>) {
             super.init()
             self.promiseCount = promises.count
             
             for promise in promises {
-                promise.then(then)
-                promise.catch(catch)
+                var p = (promise as? Deferred == nil) ? promise : (promise as Deferred).promise
+                p.statusObserver = observe
             }
             
         }

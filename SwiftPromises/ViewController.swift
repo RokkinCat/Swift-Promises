@@ -13,17 +13,17 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.resolveAfter()
-        self.resolveAfterWithChain()
-        self.resolveBefore()
+//        self.resolveAfter()
+//        self.resolveAfterWithChain()
+//        self.resolveBefore()
+//        
+//        self.rejectAfter()
+//        self.rejectBefore()
+//        
+//        self.allResolve()
+//        self.allReject()
         
-        self.rejectAfter()
-        self.rejectBefore()
-        
-        self.allResolve()
-        self.allReject()
-        
-        self.alternativePromise();
+//        self.alternativePromise();
     }
     
     func resolveAfter() {

@@ -82,7 +82,7 @@ class Promise {
     func then(then: thenClosureNoReturn) -> Promise {
         self.then { (value) -> (AnyObject?) in
             then(value)
-            return nil
+            return value
         }
         
         return self
@@ -94,7 +94,7 @@ class Promise {
             if (self.status == .PENDING) {
                 self.thens.append(then)
             } else if (self.status == .RESOLVED) {
-                then(self.value)
+                self.value = then(self.value)
             }
             
         }
@@ -146,13 +146,12 @@ class Promise {
             
             var chain: Promise?
             
-            var paramValue: AnyObject? = self.value
             for (index, then) in enumerate(self.thens) {
                 
                 // If a chain is hit, add the then
                 if (chain != nil) { chain?.then(then); return }
                 
-                var ret: AnyObject? = then(paramValue)
+                var ret: AnyObject? = then(self.value)
                 if let retPromise = ret as? Promise {
                     
                     // Set chained promised
@@ -163,7 +162,8 @@ class Promise {
                     if (self.fin != nil) { chain?.finally(self.fin!); self.fin = nil }
                     
                 } else if let retAny: AnyObject = ret {
-                    paramValue = retAny
+                    self.value = retAny
+                    println("Chaing self.value = \(self.value)")
                 }
                 
             }

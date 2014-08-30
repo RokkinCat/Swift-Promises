@@ -11,26 +11,91 @@ import XCTest
 
 class SwiftPromisesTests: XCTestCase {
     
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+    func testResolve() {
+        var expectationThen = expectationWithDescription("promise.then")
+        var expectationFinally = expectationWithDescription("promise.finally")
+        
+        let promise = Promise { (resolve, reject) -> () in resolve("Yay") }
+            .then { (value) -> () in
+                expectationThen.fulfill()
+                XCTAssertEqual("Yay", value as String, "Value should equal")
+            }
+            promise.finally { () -> () in // Using promise.finally because we need to access its status
+                expectationFinally.fulfill()
+                XCTAssertEqual(Status.RESOLVED, promise.status, "Value should equal")
+            }
+        
+        waitForExpectationsWithTimeout(0, nil)
     }
     
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
+    func testReject() {
+        var expectationCatch = expectationWithDescription("promise.catch")
+        var expectationFinally = expectationWithDescription("promise.finally")
+        
+        let promise = Promise { (resolve, reject) -> () in reject("Nay") }
+            .catch { (value) -> () in
+                expectationCatch.fulfill()
+                XCTAssertEqual("Nay", value as String, "Value should equal")
+            }
+            promise.finally { () -> () in // Using promise.finally because we need to access its status
+                expectationFinally.fulfill()
+                XCTAssertEqual(Status.REJECTED, promise.status, "Value should equal")
+            }
+        
+        waitForExpectationsWithTimeout(0, nil)
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        XCTAssert(true, "Pass")
+    func testMultipleThens() {
+        var expectationThen1 = expectationWithDescription("promise.then 1")
+        var expectationThen2 = expectationWithDescription("promise.then 2")
+        var expectationThen3 = expectationWithDescription("promise.then 3")
+        
+        let promise = Promise { (resolve, reject) -> () in resolve("Yay") }
+            .then { (value) -> () in
+                expectationThen1.fulfill()
+                XCTAssertEqual("Yay", value as String, "Value should equal")
+            }
+            .then { (value) -> () in
+                expectationThen2.fulfill()
+                XCTAssertEqual("Yay", value as String, "Value should equal")
+            }
+            .then { (value) -> () in
+                expectationThen3.fulfill()
+                XCTAssertEqual("Yay", value as String, "Value should equal")
+            }
+        
+        waitForExpectationsWithTimeout(0, nil)
     }
     
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measureBlock() {
-            // Put the code you want to measure the time of here.
-        }
+    func testMultipleThensWithReturns() {
+        var expectationThen1 = expectationWithDescription("promise.then 1")
+        var expectationThen2 = expectationWithDescription("promise.then 2")
+        var expectationThen3 = expectationWithDescription("promise.then 3")
+        var expectationFinally = expectationWithDescription("promise.finally")
+        
+        let promise = Promise { (resolve, reject) -> () in resolve("Yay") }
+            .then { (value) -> (AnyObject?) in
+                expectationThen1.fulfill()
+                XCTAssertEqual("Yay", value as String, "Value should equal")
+                return "Yay 2"
+            }
+            .then { (value) -> (AnyObject?) in
+                expectationThen2.fulfill()
+                XCTAssertEqual("Yay 2", value as String, "Value should equal")
+                return "Yay 3"
+            }
+            .then { (value) -> (AnyObject?) in
+                expectationThen3.fulfill()
+                XCTAssertEqual("Yay 3", value as String, "Value should equal")
+                return "Yay 4"
+            }
+            promise.finally { () -> () in // Using promise.finally because we need to access its status
+                expectationFinally.fulfill()
+                XCTAssertEqual(Status.RESOLVED, promise.status, "Value should equal")
+                XCTAssertEqual("Yay 4", promise.value as String, "Value should equal")
+            }
+        
+        waitForExpectationsWithTimeout(0, nil)
     }
     
 }

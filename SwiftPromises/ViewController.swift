@@ -13,17 +13,17 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        self.resolveAfter()
-//        self.resolveAfterWithChain()
-//        self.resolveBefore()
+        self.resolveAfter()
+        self.resolveAfterWithChain()
+        self.resolveBefore()
         
-//        self.rejectAfter()
-//        self.rejectBefore()
+        self.rejectAfter()
+        self.rejectBefore()
         
         self.allResolve()
-//        self.allReject()
+        self.allReject()
         
-//        self.alternativePromise();
+        self.alternativePromise();
     }
     
     func resolveAfter() {
@@ -180,8 +180,8 @@ class ViewController: UIViewController {
         deferred3.then { (value) -> () in println("Deferred 3 - \(value)") }
         
         Promise.all([deferred1, deferred2, deferred3])
-            .then { (value) -> () in
-                println("Success for all")
+            .then { (values) -> () in
+                println("Success for all - \(values)")
             }
             .catch { (error) -> () in
                 println("Error in one - \(error)")

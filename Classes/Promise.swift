@@ -214,6 +214,8 @@ extension Promise {
 
     private class All: Promise {
         
+        var promises = Array<Promise>()
+
         var promiseCount: Int = 0
         var numberOfResolveds: Int = 0
         var numberOfRejecteds: Int = 0
@@ -240,7 +242,12 @@ extension Promise {
                 if (self.total >= self.promiseCount) {
                     if (self.statusToChangeTo == .PENDING) {
                         self.statusToChangeTo = .RESOLVED
-                        self.doResolve(nil, shouldRunFinally: false)
+
+                        // Need to filter out nil values before mapping values to array
+                        var filteredNils = self.promises.filter( { (p) -> (Bool) in return (p.value != nil) } )
+                        var values = filteredNils.map( { (p) -> (AnyObject) in println(p.value); return p.value! } )
+
+                        self.doResolve(values, shouldRunFinally: false)
                     }
 
                     self.doFinally(self.statusToChangeTo)
@@ -285,6 +292,7 @@ extension Promise {
             
             for promise in promises {
                 var p = (promise as? Deferred == nil) ? promise : (promise as Deferred).promise
+                self.promises.append(p)
                 p.statusObserver = observe
             }
             

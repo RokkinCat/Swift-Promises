@@ -11,7 +11,7 @@ import Foundation
 typealias thenClosure = (AnyObject?) -> (AnyObject?)
 typealias thenClosureNoReturn = (AnyObject?) -> ()
 typealias catchClosure = (AnyObject?) -> ()
-typealias finalyClosure = () -> ()
+typealias finallyClosure = () -> ()
 
 typealias promiseClosure = ( (AnyObject?) -> (), (AnyObject?) -> () ) -> ()
 
@@ -49,7 +49,7 @@ class Deferred: Promise {
         return promise.catch(catch)
     }
     
-    override func finally(finally: finalyClosure) -> Promise {
+    override func finally(finally: finallyClosure) -> Promise {
         return promise.finally(finally)
     }
     
@@ -59,7 +59,7 @@ class Promise {
 
     var thens = Array<thenClosure>()
     var cat: catchClosure?
-    var fin: finalyClosure?
+    var fin: finallyClosure?
  
     var value: AnyObject?
 
@@ -118,7 +118,7 @@ class Promise {
         return self
     }
     
-    func finally(finally: finalyClosure) -> Promise {
+    func finally(finally: finallyClosure) -> Promise {
         if (self.fin? != nil) { return self }
         
         self.sync { () in
@@ -259,27 +259,27 @@ extension Promise {
 //        private func then(value: AnyObject?) -> Promise {
 //            self.sync { () in
 //                self.numberOfThens += 1
-//                
+//
 //                if (self.total >= self.promiseCount) {
 //                    if (self.status == .PENDING) {
 //                        self.doResolve(nil, shouldRunFinally: false)
 //                    }
-//                    
+//
 //                    self.doFinally(self)
 //                }
 //            }
-//            
+//
 //            return self // TODO: Should this really turn self?
 //        }
         
 //        private func catch(value: AnyObject?) {
 //            self.sync { () in
 //                self.numberOfCatches += 1
-//                
+//
 //                if (self.status == .PENDING) {
 //                    self.doReject(nil, shouldRunFinally: false)
 //                }
-//                
+//
 //                if (self.total >= self.promiseCount) {
 //                    self.doFinally(self)
 //                }
